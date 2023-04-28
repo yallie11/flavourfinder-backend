@@ -21,6 +21,7 @@ from flask import request
 
 @app.route('/recipes/<keyword>/<dish_type>/<cuisine_type>/<meal_type>/<calories>', methods=['GET'])
 def get_recipes(keyword, dish_type, cuisine_type, meal_type, calories ):
+    print('Request received')
     
     #connect to MySQL database
     conn = pymysql.connect(
