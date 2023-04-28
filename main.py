@@ -25,9 +25,9 @@ def get_recipes(keyword, dish_type, cuisine_type, meal_type, calories ):
     #connect to MySQL database
     conn = pymysql.connect(
         host='us-cdbr-east-06.cleardb.net',
-        user='b412eb82ae100c',
-        password='bf509678',
-        db='heroku_d732b73e337efe8',
+        user='b543b1c5defb62',
+        password='28c47692',
+        db='heroku_0fd2f804d4d62c0',
         charset='utf8mb4',
         cursorclass=pymysql.cursors.DictCursor
     )
