@@ -1,0 +1,81 @@
+API documentation for FlavourFinder: 
+
+API Endpoint: /recipes/<keyword>/<dish_type>/<cuisine_type>
+
+HTTP Method: GET
+
+Description: This endpoint retrieves a list of recipes based on the specified search keyword, dish type, and cuisine type.
+
+Request URL: {base_url}/recipes/<keyword>/<dish_type>/<cuisine_type>
+
+Request Parameters:
+
+keyword (required): A string that represents the search keyword for recipes.
+dish_type (optional): A string that represents the dish type of recipes (e.g. main course, dessert, etc.).
+cuisine_type (optional): A string that represents the cuisine type of recipes (e.g. Italian, Mexican, etc.).
+Response: A JSON object that contains a list of recipes that match the specified search criteria. Each recipe object in the list includes the following properties:
+
+Name: A string that represents the name of the recipe.
+Image: A string that represents the URL of the image of the recipe.
+Calories: A float that represents the number of calories in the recipe.
+CuisineType: A string that represents the cuisine type of the recipe.
+MealType: A string that represents the meal type of the recipe.
+Time: A string that represents the preparation time of the recipe.
+Ingredients: A list of strings that represents the ingredients of the recipe.
+Url: A string that represents the URL of the recipe.
+
+Example Request:
+
+GET /recipes/chicken/main course/italian HTTP/1.1
+Host: {your local host url when running the flask application}
+
+
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+    "recipes": [
+        {
+            "Name": "Chicken Parmesan",
+            "Image": "https://www.edamam.com/web-img/18e/18e9c9d40422dadd1e9778ca19e52f98.jpg",
+            "Calories": 519.297,
+            "CuisineType": "Italian",
+            "MealType": "main course",
+            "Time": "30 min",
+            "Ingredients": [
+                "1/4 cup all-purpose flour",
+                "1/4 teaspoon salt",
+                "1/4 teaspoon black pepper",
+                "4 (6-ounce) skinless, boneless chicken breast halves",
+                "1 tablespoon olive oil",
+                "1 1/2 cups jarred tomato-basil pasta sauce",
+                "1/2 cup (2 ounces) grated Parmesan cheese",
+                "1/4 cup (1 ounce) shredded part-skim mozzarella cheese",
+                "Cooking spray"
+            ],
+            "url": "http://www.myrecipes.com/recipe/chicken-parmesan-10000001875785/"
+        },
+        {
+            "Name": "Grilled Chicken Caesar Salad",
+            "Image": "https://www.edamam.com/web-img/222/2228e8a411abf394cf1f739397357ecb.jpg",
+            "Calories": 295.3125,
+            "CuisineType": "Italian",
+            "MealType": "main course",
+            "Time": "30 min",
+            "Ingredients": [
+                "2 skinless, boneless chicken breasts",
+                "Salt and freshly ground black pepper",
+                "4 cups Romaine lettuce",
+                "1/4 cup Caesar salad dressing",
+                "1/4 cup freshly grated Parmesan",
+                "Croutons, for serving"
+            ],
+            "url": "http://www.foodnetwork.com/recipes/tyler-florence/grilled-chicken
+
+
+
+            Status Codes:
+
+200 OK: Returned when the request is successful and there are recipes that match the search criteria.
+400 Bad Request: Returned when the keyword parameter is not provided.
+404 Not Found: Returned when there are no recipes that match the search criteria.
