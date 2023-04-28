@@ -84,6 +84,6 @@ def get_recipes(keyword, dish_type, cuisine_type, meal_type, calories ):
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=8080)
 
 
