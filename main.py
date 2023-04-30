@@ -4,17 +4,13 @@
 
 # Part 2 creating API
 # Import libraries 
-from flask import Flask 
-import json 
-import requests
+from flask import Flask, jsonify
 import pymysql
-from flask_cors import CORS, cross_origin
+from flask_cors import CORS
 
 app = Flask(__name__)
 cors = CORS(app)
 app.config['CORS_HEADERS'] = 'Content-Type'
-
-from flask import request
 
 @app.route('/recipes/<keyword>/<dish_type>/<cuisine_type>/<meal_type>/<calories>', methods=['GET'])
 def get_recipes(keyword, dish_type, cuisine_type, meal_type, calories):
@@ -76,7 +72,7 @@ def get_recipes(keyword, dish_type, cuisine_type, meal_type, calories):
     conn.close()
 
     # Return the data in JSON format 
-    return json.dumps({'recipes': recipes})
+    return jsonify({'recipes': recipes})
 
 if __name__ == '__main__':
     # Set the port number to 5000 (default Flask port number is 5000)
