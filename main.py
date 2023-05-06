@@ -54,11 +54,12 @@ def build_query(keyword, dish_type, cuisine_type, meal_type, calories):
         query = query.where(text("MealType LIKE :meal_type"))
         args['meal_type'] = f"%{meal_type}%"
 
-    if calories:
+    if calories is not None:
         query = query.where(text("Calories <= :calories"))
         args['calories'] = calories
 
     return query, args
+
 
 if __name__ == '__main__':
     app.run(debug=True)
