@@ -15,29 +15,35 @@ engine = create_engine("mysql+pymysql://{user}:{password}@{host}/{database}?char
     database='heroku_0fd2f804d4d62c0'
 ))
 
+# Define a function to build SQL query based on filters
+def build_query(keyword, dish_type, cuisine_type, meal_type, calories):
+    query = text("SELECT Name, Image, ROUND(Calories,0), CuisineType, MealType, DishType, CookTime, Ingredients, url FROM Recipes WHERE Name LIKE :keyword")
+    args = {'keyword': '%' + keyword + '%'}
+    
+    if dish_type:
+        query = query.where(text("DishType LIKE :dish_type"))
+        args['dish_type'] = '%' + dish_type + '%'
+        
+    if cuisine_type:
+        query = query.where(text("CuisineType LIKE :cuisine_type"))
+        args['cuisine_type'] = '%' + cuisine_type + '%'
+
+    if meal_type:
+        query = query.where(text("MealType LIKE :meal_type"))
+        args['meal_type'] = '%' + meal_type + '%'
+    
+    if calories:
+        query = query.where(text("Calories <= :calories"))
+        args['calories'] = calories
+        
+    return query, args
+
 @app.route('/recipes/<keyword>/<dish_type>/<cuisine_type>/<meal_type>/<calories>', methods=['GET'])
 def get_recipes(keyword, dish_type, cuisine_type, meal_type, calories):
     print('Request received')
     
     # Build SQL query based on filters
-    query = text("SELECT Name, Image, ROUND(Calories,0), CuisineType, MealType, DishType, CookTime, Ingredients, url FROM Recipes WHERE Name LIKE :keyword")
-    args = {'keyword': '%' + keyword + '%'} 
-
-    if dish_type:
-        query = text(query.text + " AND (DishType LIKE :dish_type)")
-        args['dish_type'] = '%' + dish_type + '%'
-        
-    if cuisine_type:
-        query = text(query.text + " AND (CuisineType LIKE :cuisine_type)")
-        args['cuisine_type'] = '%' + cuisine_type + '%'
-
-    if meal_type:
-        query = text(query.text + " AND (MealType LIKE :meal_type)")
-        args['meal_type'] = '%' + meal_type + '%'
-    
-    if calories:
-        query = text(query.text + " AND (Calories <= :calories)")
-        args['calories'] = calories
+    query, args = build_query(keyword, dish_type, cuisine_type, meal_type, calories)
     
     # Execute SQL query to retrieve recipes based on filters
     with engine.connect() as conn:
