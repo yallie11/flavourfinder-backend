@@ -1,75 +1,64 @@
-# Import libraries
-from flask import Flask, jsonify
-from flask_cors import CORS
+from flask import Flask, request, jsonify
 from sqlalchemy import create_engine, text
+from werkzeug.exceptions import BadRequest
 
 app = Flask(__name__)
-cors = CORS(app)
-app.config['CORS_HEADERS'] = 'Content-Type'
+cache = {}
 
-# Set up the database connection
-engine = create_engine("mysql+pymysql://{user}:{password}@{host}/{database}?charset=utf8mb4".format(
-    host='us-cdbr-east-06.cleardb.net',
-    user='b543b1c5defb62',
-    password='28c47692',
-    database='heroku_0fd2f804d4d62c0'
-))
+def get_db_uri():
+    db_config = {
+        "user": "myuser",
+        "password": "mypassword",
+        "host": "localhost",
+        "port": "5432",
+        "database": "recipes"
+    }
+    return f"postgresql://{db_config['user']}:{db_config['password']}@{db_config['host']}:{db_config['port']}/{db_config['database']}"
 
-# Define a function to build SQL query based on filters
+@app.route('/recipes/<string:keyword>/<string:dish_type>/<string:cuisine_type>/<string:meal_type>/<int:calories>')
+def get_recipes(keyword, dish_type, cuisine_type, meal_type, calories):
+    if keyword or dish_type or cuisine_type or meal_type or calories:
+        if keyword not in cache:
+            cache[keyword] = {}
+
+        if dish_type not in cache[keyword]:
+            db_uri = get_db_uri()
+            engine = create_engine(db_uri, echo=True)
+
+            query, args = build_query(keyword, dish_type, cuisine_type, meal_type, calories)
+            result = engine.execute(query, args).fetchall()
+
+            cache[keyword][dish_type] = result
+        
+        return jsonify(cache[keyword][dish_type])
+    else:
+        raise BadRequest("At least one parameter should be provided.")
+
 def build_query(keyword, dish_type, cuisine_type, meal_type, calories):
-    query = text("SELECT Name, Image, ROUND(Calories,0), CuisineType, MealType, DishType, CookTime, Ingredients, url FROM Recipes WHERE Name LIKE :keyword")
-    args = {'keyword': '%' + keyword + '%'}
-    
+    query = text("SELECT * FROM recipes WHERE 1=1")
+    args = {}
+
+    if keyword:
+        query = query.where(text("Name LIKE :keyword"))
+        args['keyword'] = f"%{keyword}%"
+
     if dish_type:
         query = query.where(text("DishType LIKE :dish_type"))
-        args['dish_type'] = '%' + dish_type + '%'
-        
+        args['dish_type'] = f"%{dish_type}%"
+
     if cuisine_type:
         query = query.where(text("CuisineType LIKE :cuisine_type"))
-        args['cuisine_type'] = '%' + cuisine_type + '%'
+        args['cuisine_type'] = f"%{cuisine_type}%"
 
     if meal_type:
         query = query.where(text("MealType LIKE :meal_type"))
-        args['meal_type'] = '%' + meal_type + '%'
-    
+        args['meal_type'] = f"%{meal_type}%"
+
     if calories:
         query = query.where(text("Calories <= :calories"))
         args['calories'] = calories
-        
+
     return query, args
 
-@app.route('/recipes/<keyword>/<dish_type>/<cuisine_type>/<meal_type>/<calories>', methods=['GET'])
-def get_recipes(keyword, dish_type, cuisine_type, meal_type, calories):
-    print('Request received')
-    
-    # Build SQL query based on filters
-    query, args = build_query(keyword, dish_type, cuisine_type, meal_type, calories)
-    
-    # Execute SQL query to retrieve recipes based on filters
-    with engine.connect() as conn:
-        results = conn.execute(query, args)
-
-    # Convert results to a dictionary format
-    recipes = []
-    for row in results:
-        recipe = {
-            'Name': row['Name'],
-            'Image': row['Image'],
-            'Calories': row['ROUND(Calories,0)'],
-            'CuisineType': row['CuisineType'],
-            'MealType': row['MealType'],
-            'DishType': row['DishType'],
-            'CookTime': row['CookTime'],
-            'Ingredients': row['Ingredients'],
-            'url': row['url']
-        }
-
-        recipes.append(recipe)
-
-    # Return the data in JSON format 
-    return jsonify({'recipes': recipes})
-
 if __name__ == '__main__':
-    # Set the port number to 5000 (default Flask port number is 5000)
-    port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port)
+    app.run(debug=True)
